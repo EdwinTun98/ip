@@ -1,55 +1,104 @@
 import java.util.Scanner;
 
 public class Eddie {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        Display.showStartScreen();
+    private boolean isRunning = true;
+    private static final int MAX_TASKS = 100;
+    private String[] tasks = new String[MAX_TASKS];
+    private int countTask = 0;
 
-        while(true) {
-            String userInput = scanner.nextLine();
-            if(userInput.equals("bye")) {
-                Display.showEndScreen();
-                break;
-            }
-            Display.echoUserInput(userInput);
+    public static void main(String[] args) {
+        Eddie eddie = new Eddie();
+        eddie.run();
+    }
+
+    public void run() {
+        Display.showStartPage();
+        Scanner scanner = new Scanner(System.in);
+
+        while (isRunning) {
+            System.out.print("You: ");
+            String userInput = scanner.nextLine().trim();
+            Display.printLine();
+            processUserInput(userInput);
         }
         scanner.close();
+    }
+    
+    private void processUserInput(String input) {
+        switch (input.toLowerCase()) {
+        case "bye":
+            isRunning = false;
+            Display.showEndPage();
+            break;
+        case "list":
+            Display.showTaskList(tasks, countTask);
+            break;
+        default:
+            addTask(input);
+            break;
+        }
+        Display.printLine();
+    }
+
+    private void addTask(String task) {
+        if (countTask < MAX_TASKS) {
+            tasks[countTask] = task;
+            countTask++;
+            Display.showTaskAdded(tasks[countTask -1]);
+        }
+        else {
+            Display.showError("You have reached the maximum number of tasks");
+        }
     }
 }
 
 class Display {
-    public static void showStartScreen() {
-        String logo = "  ______   ______    ______    ___   ______  \n"
-                    + " |  ____| |  __  \\  |  __  \\   | |  |  ____| \n"
-                    + " | |___   | |  | |  | |  | |   | |  | |___   \n"
-                    + " |  ___|  | |  | |  | |  | |   | |  |  ___|  \n"
-                    + " | |____  | |__| |  | |__| |   | |  | |____  \n"
-                    + " |______| |_____/   |______/   |_|  |______|";
+    public static void showStartPage() {
+        String logo =
+                "  _____  ____  ____  ___  _____  \n"
+                        + " | ____||  _ \\|  _ \\|_ _|| ____| \n"
+                        + " |  _|  | | | | | | || | |  _|   \n"
+                        + " | |___ | |_| | |_| || | | |___  \n"
+                        + " |_____||____/|____/|___||_____| \n";
+
         String startScreen = "Eddie:\n"
                 + "Hello! I'm Eddie, your friendly assistant.\n"
-                + "How can I help you today?\n";
+                + "Type anything to add it as a task!\n"
+                + "Type 'list' to view your tasks or 'bye' to exit.\n";
 
-        printLine();
         System.out.println(logo);
         printLine();
         System.out.println(startScreen);
         printLine();
     }
-    public static void showEndScreen() {
-        String endScreen = "Eddie:\n"
-                        + "Goodbye! Hope to see you soon!\n";
-        printLine();
-        System.out.println(endScreen);
-        printLine();
+
+    public static void showEndPage() {
+        System.out.println("Eddie:\nGoodbye! Hope to see you again soon!");
     }
 
     public static void printLine() {
         System.out.println("____________________________________________________________");
     }
 
-    public static void echoUserInput(String input) {
-        printLine();
-        System.out.println("Eddie:\n" + input);
-        printLine();
+    public static void showTaskAdded(String task) {
+        System.out.println("Eddie:\nTask added: " + task);
+    }
+
+    public static void showTaskList(String[] tasks, int countTask) {
+        System.out.println("Eddie:\nHere are your tasks:");
+
+        if (countTask == 0) {
+            System.out.println("No tasks added yet.");
+        }
+        else {
+            for (int i = 0; i < countTask; i++) {
+                System.out.println((i + 1) + ". " + tasks[i]);
+            }
+        }
+    }
+
+    public static void showError(String message) {
+        System.out.println("Eddie:\nError: " + message);
     }
 }
+
