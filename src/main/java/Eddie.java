@@ -99,21 +99,13 @@ class Task {
         this.isDone = false;
     }
 
-    public void markDone() {
-        this.isDone = true;
-    }
+    public void markDone() {this.isDone = true;}
 
-    public void markNotDone() {
-        this.isDone = false;
-    }
+    public void markNotDone() {this.isDone = false;}
 
-    public String getIcon() {
-        return isDone ? "[X]" : "[ ]";
-    }
+    public String getIcon() {return isDone ? "[X]" : "[ ]";}
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() {return description;}
 }
 
 class Display {
