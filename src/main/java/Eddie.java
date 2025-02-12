@@ -53,14 +53,14 @@ public class Eddie {
             addTask(command, arguments);
             break;
         default:
-            Display.showError("Invalid command. Use: todo, deadline, event, list, mark {num}, or unmark {num}.");
+            Display.showError(ErrorMessages.INVALID_COMMAND);
         }
         Display.printLine();
     }
 
     private void addTask(String taskType, String details) {
         if (taskCount >= MAX_TASKS) {
-            Display.showError("You have reached the maximum number of tasks.");
+            Display.showError(ErrorMessages.TASK_LIST_FULL);
             return;
         }
 
@@ -71,7 +71,7 @@ public class Eddie {
             if (!details.isEmpty()) {
                 newTask = new Todo(details);
             } else {
-                Display.showError("Invalid format. Use: todo {task description}");
+                Display.showError(ErrorMessages.INVALID_TODO);
             }
             break;
         case "deadline":
@@ -79,7 +79,7 @@ public class Eddie {
             if (deadlineParts.length > 1) {
                 newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
             } else {
-                Display.showError("Invalid format. Use: deadline {task} /by {date}");
+                Display.showError(ErrorMessages.INVALID_DEADLINE);
             }
             break;
         case "event":
@@ -89,10 +89,10 @@ public class Eddie {
                 if (timeParts.length > 1) {
                     newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
                 } else {
-                    Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
+                    Display.showError(ErrorMessages.INVALID_EVENT);
                 }
             } else {
-                Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
+                Display.showError(ErrorMessages.INVALID_EVENT);
             }
             break;
         }
@@ -110,10 +110,10 @@ public class Eddie {
                 tasks[index].markDone();
                 Display.showTaskMarked(tasks[index]);
             } else {
-                Display.showError("Invalid task number.");
+                Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
             }
         } catch (NumberFormatException e) {
-            Display.showError("Please provide a valid task number.");
+            Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
         }
     }
 
@@ -124,10 +124,10 @@ public class Eddie {
                 tasks[index].markNotDone();
                 Display.showTaskUnmarked(tasks[index]);
             } else {
-                Display.showError("Invalid task number.");
+                Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
             }
         } catch (NumberFormatException e) {
-            Display.showError("Please provide a valid task number.");
+            Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
         }
     }
 }
@@ -215,6 +215,20 @@ class Event extends Task {
     public String toString() {
         return super.toString() + " (from: " + from + " to: " + to + ")";
     }
+}
+
+class ErrorMessages {
+    public static final String INVALID_COMMAND = "Oh no! Invalid command. Use: " +
+            "todo, deadline, event, list, mark {num}, or unmark {num}.";
+    public static final String TASK_LIST_FULL = "Oh no! You have reached the " +
+            "maximum number of tasks.";
+    public static final String INVALID_TODO = "Oh no! Invalid description. Use:" +
+            " todo {task description}";
+    public static final String INVALID_DEADLINE = "Oh no! Invalid description. " +
+            "Use: deadline {task} /by {date}";
+    public static final String INVALID_EVENT = "Oh no! Invalid description. Use:" +
+            " event {task} /from {start} /to {end}";
+    public static final String INVALID_TASK_NUMBER = "Oh no! Invalid task number.";
 }
 
 class Display {
