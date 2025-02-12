@@ -44,7 +44,11 @@ public class Eddie {
             unmarkTask(arguments);
             break;
         case "todo":
+            addTask(command, arguments);
+            break;
         case "deadline":
+            addTask(command, arguments);
+            break;
         case "event":
             addTask(command, arguments);
             break;
@@ -64,21 +68,32 @@ public class Eddie {
 
         switch (taskType) {
         case "todo":
-            if (!details.isEmpty()) newTask = new Todo(details);
-            else Display.showError("Invalid format. Use: todo {task description}");
+            if (!details.isEmpty()) {
+                newTask = new Todo(details);
+            } else {
+                Display.showError("Invalid format. Use: todo {task description}");
+            }
             break;
         case "deadline":
             String[] deadlineParts = details.split(" /by ", 2);
-            if (deadlineParts.length > 1) newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
-            else Display.showError("Invalid format. Use: deadline {task} /by {date}");
+            if (deadlineParts.length > 1) {
+                newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
+            } else {
+                Display.showError("Invalid format. Use: deadline {task} /by {date}");
+            }
             break;
         case "event":
             String[] eventParts = details.split(" /from ", 2);
             if (eventParts.length > 1) {
                 String[] timeParts = eventParts[1].split(" /to ", 2);
-                if (timeParts.length > 1) newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
-                else Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
-            } else Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
+                if (timeParts.length > 1) {
+                    newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
+                } else {
+                    Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
+                }
+            } else {
+                Display.showError("Invalid format. Use: event {task} /from {start} /to {end}");
+            }
             break;
         }
 
@@ -94,7 +109,9 @@ public class Eddie {
             if (index >= 0 && index < taskCount) {
                 tasks[index].markDone();
                 Display.showTaskMarked(tasks[index]);
-            } else Display.showError("Invalid task number.");
+            } else {
+                Display.showError("Invalid task number.");
+            }
         } catch (NumberFormatException e) {
             Display.showError("Please provide a valid task number.");
         }
@@ -106,7 +123,9 @@ public class Eddie {
             if (index >= 0 && index < taskCount) {
                 tasks[index].markNotDone();
                 Display.showTaskUnmarked(tasks[index]);
-            } else Display.showError("Invalid task number.");
+            } else {
+                Display.showError("Invalid task number.");
+            }
         } catch (NumberFormatException e) {
             Display.showError("Please provide a valid task number.");
         }
