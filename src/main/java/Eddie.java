@@ -38,10 +38,10 @@ public class Eddie {
             Display.showTaskList(tasks, taskCount);
             break;
         case "mark":
-            markTask(arguments);
+            taskStatus(arguments, true);
             break;
         case "unmark":
-            unmarkTask(arguments);
+            taskStatus(arguments, false);
             break;
         case "todo":
             addTask(command, arguments);
@@ -103,12 +103,17 @@ public class Eddie {
         }
     }
 
-    private void markTask(String indexStr) {
+    private void taskStatus(String taskIndex, boolean markDone) {
         try {
-            int index = Integer.parseInt(indexStr) - 1;
+            int index = Integer.parseInt(taskIndex) - 1;
             if (index >= 0 && index < taskCount) {
-                tasks[index].markDone();
-                Display.showTaskMarked(tasks[index]);
+                if(markDone){
+                    tasks[index].markDone();
+                    Display.showTaskMarked(tasks[index]);
+                } else {
+                    tasks[index].markNotDone();
+                    Display.showTaskUnmarked(tasks[index]);
+                }
             } else {
                 Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
             }
@@ -117,19 +122,13 @@ public class Eddie {
         }
     }
 
-    private void unmarkTask(String indexStr) {
-        try {
-            int index = Integer.parseInt(indexStr) - 1;
-            if (index >= 0 && index < taskCount) {
-                tasks[index].markNotDone();
-                Display.showTaskUnmarked(tasks[index]);
-            } else {
-                Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
-            }
-        } catch (NumberFormatException e) {
-            Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
-        }
-    }
+//    private void markTask(String indexStr) {
+//        taskStatus(indexStr,true);
+//    }
+//
+//    private void unmarkTask(String indexStr) {
+//        taskStatus(indexStr,false);
+//    }
 }
 
 class Task {
@@ -141,30 +140,18 @@ class Task {
         this.isDone = false;
     }
 
-    public void markDone() {
-        this.isDone = true;
-    }
+    public void markDone() {this.isDone = true;}
 
-    public void markNotDone() {
-        this.isDone = false;
-    }
+    public void markNotDone() {this.isDone = false;}
 
-    public String getIcon() {
-        return isDone ? "[X]" : "[ ]";
-    }
+    public String getIcon() {return isDone ? "[X]" : "[ ]";}
 
-    public String getDescription() {
-        return description;
-    }
+    public String getDescription() {return description;}
 
-    public String getTaskType() {
-        return "[ ]";
-    }
+    public String getTaskType() {return "[ ]";}
 
     @Override
-    public String toString() {
-        return getTaskType() + getIcon() + " " + getDescription();
-    }
+    public String toString() {return getTaskType() + getIcon() + " " + getDescription();}
 }
 
 class Todo extends Task {
