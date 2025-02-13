@@ -44,13 +44,13 @@ public class Eddie {
             taskStatus(arguments, false);
             break;
         case "todo":
-            addTask(command, arguments);
+            addToDo(arguments);
             break;
         case "deadline":
-            addTask(command, arguments);
+            addDeadLine(arguments);
             break;
         case "event":
-            addTask(command, arguments);
+            addEvent(arguments);
             break;
         default:
             Display.showError(ErrorMessages.INVALID_COMMAND);
@@ -58,49 +58,37 @@ public class Eddie {
         Display.printLine();
     }
 
-    private void addTask(String taskType, String details) {
-        if (taskCount >= MAX_TASKS) {
-            Display.showError(ErrorMessages.TASK_LIST_FULL);
+    private void addToDo(String details) {
+        if (details.isEmpty()) {
+            Display.showError(ErrorMessages.INVALID_TODO);
             return;
         }
+        Task newTask = new Todo(details);
+        tasks[taskCount++] = newTask;
+        Display.showTaskAdded(newTask, taskCount);
+    }
 
-        Task newTask = null;
-
-        switch (taskType) {
-        case "todo":
-            if (!details.isEmpty()) {
-                newTask = new Todo(details);
-            } else {
-                Display.showError(ErrorMessages.INVALID_TODO);
-            }
-            break;
-        case "deadline":
-            String[] deadlineParts = details.split(" /by ", 2);
-            if (deadlineParts.length > 1) {
-                newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
-            } else {
-                Display.showError(ErrorMessages.INVALID_DEADLINE);
-            }
-            break;
-        case "event":
-            String[] eventParts = details.split(" /from ", 2);
-            if (eventParts.length > 1) {
-                String[] timeParts = eventParts[1].split(" /to ", 2);
-                if (timeParts.length > 1) {
-                    newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
-                } else {
-                    Display.showError(ErrorMessages.INVALID_EVENT);
-                }
-            } else {
-                Display.showError(ErrorMessages.INVALID_EVENT);
-            }
-            break;
+    private void addDeadLine(String details) {
+        String[] deadlineParts = details.split(" /by ", 2);
+        if (deadlineParts.length < 2) {
+            Display.showError(ErrorMessages.INVALID_DEADLINE);
+            return;
         }
+        Task newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
+        tasks[taskCount++] = newTask;
+        Display.showTaskAdded(newTask, taskCount);
+    }
 
-        if (newTask != null) {
-            tasks[taskCount++] = newTask;
-            Display.showTaskAdded(newTask, taskCount);
+    private void addEvent(String details) {
+        String[] eventParts = details.split(" /from ", 2);
+        if (eventParts.length < 2 || !eventParts[1].contains(" /to ")) {
+            Display.showError(ErrorMessages.INVALID_EVENT);
+            return;
         }
+        String[] timeParts = eventParts[1].split(" /to ", 2);
+        Task newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
+        tasks[taskCount++] = newTask;
+        Display.showTaskAdded(newTask, taskCount);
     }
 
     private void taskStatus(String taskIndex, boolean markDone) {
@@ -109,10 +97,10 @@ public class Eddie {
             if (index >= 0 && index < taskCount) {
                 if(markDone){
                     tasks[index].markDone();
-                    Display.showTaskMarked(tasks[index]);
+                    Display.showMarkedStatus(tasks[index], true);
                 } else {
                     tasks[index].markNotDone();
-                    Display.showTaskUnmarked(tasks[index]);
+                    Display.showMarkedStatus(tasks[index], false);
                 }
             } else {
                 Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
@@ -121,14 +109,6 @@ public class Eddie {
             Display.showError(ErrorMessages.INVALID_TASK_NUMBER);
         }
     }
-
-//    private void markTask(String indexStr) {
-//        taskStatus(indexStr,true);
-//    }
-//
-//    private void unmarkTask(String indexStr) {
-//        taskStatus(indexStr,false);
-//    }
 }
 
 class Task {
@@ -209,11 +189,11 @@ class ErrorMessages {
             "todo, deadline, event, list, mark {num}, or unmark {num}.";
     public static final String TASK_LIST_FULL = "Oh no! You have reached the " +
             "maximum number of tasks.";
-    public static final String INVALID_TODO = "Oh no! Invalid description. Use:" +
+    public static final String INVALID_TODO = "Oh no! empty description. Use:" +
             " todo {task description}";
-    public static final String INVALID_DEADLINE = "Oh no! Invalid description. " +
+    public static final String INVALID_DEADLINE = "Oh no! empty description. " +
             "Use: deadline {task} /by {date}";
-    public static final String INVALID_EVENT = "Oh no! Invalid description. Use:" +
+    public static final String INVALID_EVENT = "Oh no! empty description. Use:" +
             " event {task} /from {start} /to {end}";
     public static final String INVALID_TASK_NUMBER = "Oh no! Invalid task number.";
 }
@@ -271,12 +251,12 @@ class Display {
         for (int i = 0; i < count; i++) System.out.println((i + 1) + ". " + tasks[i]);
     }
 
-    public static void showTaskMarked(Task task) {
-        System.out.println("Eddie:\nYay! Marked as done:\n  " + task);
-    }
-
-    public static void showTaskUnmarked(Task task) {
-        System.out.println("Eddie:\nMarked as not done:\n  " + task);
+    public static void showMarkedStatus(Task task, boolean done) {
+        if(done) {
+            System.out.println("Eddie:\nYay! Marked as done:\n  " + task);
+        } else {
+            System.out.println("Eddie:\nOh no! Marked as not done:\n  " + task);
+        }
     }
 
     public static void showError(String msg) {
