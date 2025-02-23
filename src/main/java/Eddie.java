@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.util.ArrayList;
 
 /**
  * The Eddie class represents a simple task management system chatbot.
@@ -6,9 +7,7 @@ import java.util.Scanner;
  */
 public class Eddie {
     private boolean isRunning = true;
-    private static final int MAX_TASKS = 100;
-    private final Task[] tasks = new Task[MAX_TASKS];
-    private int taskCount = 0;
+    ArrayList<Task> tasksList = new ArrayList<>();
 
     /**
      * Initializes Eddie and starts the run loop.
@@ -36,6 +35,7 @@ public class Eddie {
 
     /**
      * Processes user input and executes the user command through CLI.
+     *
      * @param input The user's command input.
      */
     private void processUserInput(String input) {
@@ -49,7 +49,7 @@ public class Eddie {
                 Display.showEndPage();
                 break;
             case "list":
-                Display.showTaskList(tasks, taskCount);
+                Display.showTaskList(tasksList);
                 break;
             case "mark":
                 taskStatus(arguments, true);
@@ -66,6 +66,9 @@ public class Eddie {
             case "event":
                 addEvent(arguments);
                 break;
+            case "delete":
+                deleteTask(arguments);
+                break;
             default:
                 throw new EddieException(ErrorMessages.INVALID_COMMAND);
             }
@@ -77,18 +80,21 @@ public class Eddie {
 
     /**
      * Adds a ToDo task to the task list.
+     *
      * @param details The task description.
      * @throws EddieException If the details are empty or invalid.
      */
     private void addToDo(String details) throws EddieException {
         EddieException.checkTodo(details);
         Task newTask = new Todo(details);
-        tasks[taskCount++] = newTask;
-        Display.showTaskAdded(newTask, taskCount);
+        tasksList.add(newTask);
+        //tasks[taskCount++] = newTask;
+        Display.showTaskAdded(newTask, tasksList.size());
     }
 
     /**
      * Adds a Deadline task to the task list.
+     *
      * @param details The task description and deadline.
      * @throws EddieException If the format is incorrect.
      */
@@ -96,12 +102,13 @@ public class Eddie {
         EddieException.checkDeadline(details);
         String[] deadlineParts = details.split(" /by ", 2);
         Task newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
-        tasks[taskCount++] = newTask;
-        Display.showTaskAdded(newTask, taskCount);
+        tasksList.add(newTask);
+        Display.showTaskAdded(newTask, tasksList.size());
     }
 
     /**
      * Adds an Event task to the task list.
+     *
      * @param details The task description, start, and end times.
      * @throws EddieException If the format is incorrect.
      */
@@ -110,24 +117,32 @@ public class Eddie {
         String[] eventParts = details.split(" /from ", 2);
         String[] timeParts = eventParts[1].split(" /to ", 2);
         Task newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
-        tasks[taskCount++] = newTask;
-        Display.showTaskAdded(newTask, taskCount);
+        tasksList.add(newTask);
+        Display.showTaskAdded(newTask, tasksList.size());
     }
 
     /**
      * Marks or unmarks a task as completed.
+     *
      * @param taskIndex The task number as a string.
-     * @param markDone True to mark as done, false to unmark.
+     * @param markDone  True to mark as done, false to unmark.
      * @throws EddieException If the task number is invalid.
      */
     private void taskStatus(String taskIndex, boolean markDone) throws EddieException {
-            int index = EddieException.checkTaskStatus(taskIndex, taskCount);
-            if (markDone) {
-                tasks[index].markDone();
-            } else {
-                tasks[index].markNotDone();
-            }
-            Display.showMarkedStatus(tasks[index], markDone);
+        int index = EddieException.checkTaskStatus(taskIndex, tasksList.size());
+        Task task = tasksList.get(index);
+        if (markDone) {
+            task.markDone();
+        } else {
+            task.markNotDone();
+        }
+        Display.showMarkedStatus(task, markDone);
+    }
+
+    private void deleteTask(String taskIndex) throws EddieException {
+        int index = EddieException.checkTaskStatus(taskIndex, tasksList.size());
+        Task removedTask = tasksList.remove(index);
+        Display.showTaskDeleted(removedTask, tasksList.size());
     }
 }
 
@@ -140,6 +155,7 @@ class Task {
 
     /**
      * Constructs a new Task with a given description.
+     *
      * @param description The description of the task.
      */
     public Task(String description) {
@@ -150,33 +166,48 @@ class Task {
     /**
      * Marks the task as done.
      */
-    public void markDone() {this.isDone = true;}
+    public void markDone() {
+        this.isDone = true;
+    }
 
     /**
      * Marks the task as not done.
      */
-    public void markNotDone() {this.isDone = false;}
+    public void markNotDone() {
+        this.isDone = false;
+    }
 
     /**
      * Returns the task's completion status icon.
+     *
      * @return "[X]" if done, "[ ]" otherwise.
      */
-    public String getIcon() {return isDone ? "[X]" : "[ ]";}
+    public String getIcon() {
+        return isDone ? "[X]" : "[ ]";
+    }
 
     /**
      * Returns the task description.
+     *
      * @return The description of the task.
      */
-    public String getDescription() {return description;}
+    public String getDescription() {
+        return description;
+    }
 
     /**
      * Returns the task type icon.
+     *
      * @return A default task type icon.
      */
-    public String getTaskType() {return "[ ]";}
+    public String getTaskType() {
+        return "[ ]";
+    }
 
     @Override
-    public String toString() {return getTaskType() + getIcon() + " " + getDescription();}
+    public String toString() {
+        return getTaskType() + getIcon() + " " + getDescription();
+    }
 }
 
 /**
@@ -201,8 +232,9 @@ class Deadline extends Task {
 
     /**
      * Constructs a new Deadline task.
+     *
      * @param description The task description.
-     * @param by The deadline for the task.
+     * @param by          The deadline for the task.
      */
     public Deadline(String description, String by) {
         super(description);
@@ -229,9 +261,10 @@ class Event extends Task {
 
     /**
      * Constructs a new Event task.
+     *
      * @param description The event description.
-     * @param from The start time of the event.
-     * @param to The end time of the event.
+     * @param from        The start time of the event.
+     * @param to          The end time of the event.
      */
     public Event(String description, String from, String to) {
         super(description);
@@ -257,6 +290,7 @@ class Event extends Task {
 class EddieException extends Exception {
     /**
      * Constructs an EddieException with a specific error message.
+     *
      * @param message The error message.
      */
     public EddieException(String message) {
@@ -265,6 +299,7 @@ class EddieException extends Exception {
 
     /**
      * Validates a ToDo task description.
+     *
      * @param details The task description.
      * @throws EddieException If the description is empty.
      */
@@ -276,6 +311,7 @@ class EddieException extends Exception {
 
     /**
      * Validates a Deadline task description.
+     *
      * @param details The task description including the deadline.
      * @throws EddieException If the format is incorrect.
      */
@@ -288,6 +324,7 @@ class EddieException extends Exception {
 
     /**
      * Validates an Event task description.
+     *
      * @param details The task description including the event time.
      * @throws EddieException If the format is incorrect.
      */
@@ -300,6 +337,7 @@ class EddieException extends Exception {
 
     /**
      * Validates and parses a task index input.
+     *
      * @param taskIndex The task index as a string.
      * @param taskCount The total number of tasks.
      * @return The parsed and validated task index.
@@ -392,7 +430,8 @@ class Display {
 
     /**
      * Displays a message confirming a task has been added.
-     * @param task The task that was added.
+     *
+     * @param task  The task that was added.
      * @param count The total number of tasks.
      */
     public static void showTaskAdded(Task task, int count) {
@@ -402,29 +441,40 @@ class Display {
 
     /**
      * Displays the list of all tasks.
-     * @param tasks Array of tasks.
-     * @param count Total number of tasks.
+     *
+     * @param tasksList Array of tasks.
      */
-    public static void showTaskList(Task[] tasks, int count) {
+    public static void showTaskList(ArrayList<Task> tasksList) {
         System.out.println("Eddie:\nHere are the tasks in your list:");
-        for (int i = 0; i < count; i++) System.out.println((i + 1) + ". " + tasks[i]);
+        if (tasksList.isEmpty()) {
+            System.out.println("No tasks in your list.");
+        }
+
+        for (int i = 0; i < tasksList.size(); i++) System.out.println((i + 1) + ". " + tasksList.get(i));
     }
 
     /**
      * Displays a message when a task is marked or unmarked.
+     *
      * @param task The task being updated.
      * @param done True if marking as done, false if unmarking.
      */
     public static void showMarkedStatus(Task task, boolean done) {
-        if(done) {
+        if (done) {
             System.out.println("Eddie:\nYay! Marked as done:\n  " + task + "\nHave a Beer!!");
         } else {
             System.out.println("Eddie:\nOh no! Marked as not done:\n  " + task);
         }
     }
 
+    public static void showTaskDeleted(Task task, int count) {
+        System.out.println("Eddie:\nNoted. I've removed this task:\n  " + task);
+        System.out.println("Now you have " + count + " tasks in the list.");
+    }
+
     /**
      * Displays an error message.
+     *
      * @param msg The error message to display.
      */
     public static void showError(String msg) {
