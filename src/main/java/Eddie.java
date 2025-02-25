@@ -7,7 +7,11 @@ import java.util.ArrayList;
  */
 public class Eddie {
     private boolean isRunning = true;
-    ArrayList<Task> tasksList = new ArrayList<>();
+    private ArrayList<Task> tasksList;
+
+    public Eddie() {
+        this.tasksList = Storage.loadTasks(); // Load tasks from file at startup
+    }
 
     /**
      * Initializes Eddie and starts the run loop.
@@ -88,8 +92,8 @@ public class Eddie {
         EddieException.checkTodo(details);
         Task newTask = new Todo(details);
         tasksList.add(newTask);
-        //tasks[taskCount++] = newTask;
         Display.showTaskAdded(newTask, tasksList.size());
+        Storage.saveTasks(tasksList);  // Save to file after adding
     }
 
     /**
@@ -104,6 +108,7 @@ public class Eddie {
         Task newTask = new Deadline(deadlineParts[0], deadlineParts[1]);
         tasksList.add(newTask);
         Display.showTaskAdded(newTask, tasksList.size());
+        Storage.saveTasks(tasksList);
     }
 
     /**
@@ -119,6 +124,7 @@ public class Eddie {
         Task newTask = new Event(eventParts[0], timeParts[0], timeParts[1]);
         tasksList.add(newTask);
         Display.showTaskAdded(newTask, tasksList.size());
+        Storage.saveTasks(tasksList);
     }
 
     /**
@@ -137,72 +143,53 @@ public class Eddie {
             task.markNotDone();
         }
         Display.showMarkedStatus(task, markDone);
+        Storage.saveTasks(tasksList);
     }
 
     private void deleteTask(String taskIndex) throws EddieException {
         int index = EddieException.checkTaskStatus(taskIndex, tasksList.size());
         Task removedTask = tasksList.remove(index);
         Display.showTaskDeleted(removedTask, tasksList.size());
+        Storage.saveTasks(tasksList);
     }
 }
 
 /**
  * Represents a generic task that can be marked as done or not done.
  */
-class Task {
+abstract class Task {
     protected String description;
     protected boolean isDone;
 
-    /**
-     * Constructs a new Task with a given description.
-     *
-     * @param description The description of the task.
-     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
-    /**
-     * Marks the task as done.
-     */
+    public Task(String description, boolean isDone) {
+        this.description = description;
+        this.isDone = isDone;
+    }
+
     public void markDone() {
         this.isDone = true;
     }
 
-    /**
-     * Marks the task as not done.
-     */
     public void markNotDone() {
         this.isDone = false;
     }
 
-    /**
-     * Returns the task's completion status icon.
-     *
-     * @return "[X]" if done, "[ ]" otherwise.
-     */
     public String getIcon() {
         return isDone ? "[X]" : "[ ]";
     }
 
-    /**
-     * Returns the task description.
-     *
-     * @return The description of the task.
-     */
     public String getDescription() {
         return description;
     }
 
-    /**
-     * Returns the task type icon.
-     *
-     * @return A default task type icon.
-     */
-    public String getTaskType() {
-        return "[ ]";
-    }
+    public abstract String getTaskType();
+
+    public abstract String toFileFormat();
 
     @Override
     public String toString() {
@@ -218,9 +205,18 @@ class Todo extends Task {
         super(description);
     }
 
+    public Todo(String description, boolean isDone) {
+        super(description, isDone);
+    }
+
     @Override
     public String getTaskType() {
         return "[T]";
+    }
+
+    @Override
+    public String toFileFormat() {
+        return "T | " + (isDone ? "1" : "0") + " | " + description;
     }
 }
 
@@ -228,22 +224,26 @@ class Todo extends Task {
  * deadline task class to create deadline tasks.
  */
 class Deadline extends Task {
-    private final String by;
+    private String by;
 
-    /**
-     * Constructs a new Deadline task.
-     *
-     * @param description The task description.
-     * @param by          The deadline for the task.
-     */
     public Deadline(String description, String by) {
         super(description);
+        this.by = by;
+    }
+
+    public Deadline(String description, String by, boolean isDone) {
+        super(description, isDone);
         this.by = by;
     }
 
     @Override
     public String getTaskType() {
         return "[D]";
+    }
+
+    @Override
+    public String toFileFormat() {
+        return "D | " + (isDone ? "1" : "0") + " | " + description + " | " + by;
     }
 
     @Override
@@ -256,18 +256,16 @@ class Deadline extends Task {
  * event task class to create events with a start and end time.
  */
 class Event extends Task {
-    private final String from;
-    private final String to;
+    private String from, to;
 
-    /**
-     * Constructs a new Event task.
-     *
-     * @param description The event description.
-     * @param from        The start time of the event.
-     * @param to          The end time of the event.
-     */
     public Event(String description, String from, String to) {
         super(description);
+        this.from = from;
+        this.to = to;
+    }
+
+    public Event(String description, String from, String to, boolean isDone) {
+        super(description, isDone);
         this.from = from;
         this.to = to;
     }
@@ -278,11 +276,15 @@ class Event extends Task {
     }
 
     @Override
+    public String toFileFormat() {
+        return "E | " + (isDone ? "1" : "0") + " | " + description + " | " + from + " | " + to;
+    }
+
+    @Override
     public String toString() {
         return super.toString() + " (from: " + from + " to: " + to + ")";
     }
 }
-
 
 /**
  * Eddie exception class for handling task-related errors in the Eddie task manager.
@@ -369,6 +371,12 @@ class ErrorMessages {
     public static final String INVALID_EVENT = "Oh no! empty description. Use:" +
             " event {task} /from {start} /to {end}";
     public static final String INVALID_TASK_NUMBER = "Oh no! Invalid task number.";
+    public static final String MKDIR_FAILED = "Oh no! Unable to create directory" +
+            " for saving task.";
+    public static final String SAVE_TASK_FAILED = "Oh no! Unable to save task: ";
+    public static final String TASK_LOAD_FAILED = "Oh no! Unable to load task: ";
+    public static final String TASK_TYPE_UNKNOWN = "Oh no! Unknown task type: ";
+    public static final String TASK_PARSING_ERROR = "Oh no! parsing task: ";
 }
 
 /**
