@@ -4,6 +4,7 @@ import task.Task;
 import command.EddieException;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Manages a list of tasks.
@@ -115,5 +116,15 @@ public class TaskList {
             list.append((i + 1)).append(". ").append(tasks.get(i)).append("\n");
         }
         return list.toString();
+    }
+
+    public List<Task> findTasks(String Keyword){
+        List<Task> tasks = new ArrayList<>();
+        for (Task task : tasks) {
+            if (task.getDescription().toLowerCase().contains(Keyword.toLowerCase())) {
+                tasks.add(task);
+            }
+        }
+        return tasks;
     }
 }

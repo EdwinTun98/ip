@@ -2,6 +2,7 @@ package ui;
 
 import task.Task;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Ui {
@@ -89,5 +90,17 @@ public class Ui {
     public String readCommand() {
         System.out.print("You: ");
         return scanner.nextLine().trim();
+    }
+
+    public void showMatchingTasks(List<Task> matchedTasks) {
+        System.out.println("Eddie:\nHere are the tasks matching your list:");
+        if (matchedTasks.isEmpty()) {
+            System.out.println("No tasks matching your list.");
+        }
+        int index = 1;
+        for (Task task : matchedTasks) {
+            System.out.println(index + ". " + task);
+            index++;
+        }
     }
 }
