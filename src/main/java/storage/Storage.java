@@ -9,18 +9,18 @@ import command.EddieException;
 import ui.ErrorMessages;
 
 import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class Storage {
     private final String filePath;
+    private static final DateTimeFormatter dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
 
     public Storage(String filePath) {
         this.filePath = filePath;
     }
 
-    /**
-     * Loads tasks from the storage file.
-     */
     public ArrayList<Task> loadTask() throws EddieException {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = new File(filePath);
@@ -42,9 +42,6 @@ public class Storage {
         return tasks;
     }
 
-    /**
-     * Saves tasks to the storage file.
-     */
     public void saveTasks(ArrayList<Task> tasks) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             for (Task task : tasks) {
@@ -56,9 +53,6 @@ public class Storage {
         }
     }
 
-    /**
-     * Parses a line from the file into a Task object.
-     */
     private Task parseTask(String line) throws EddieException {
         try {
             String[] parts = line.split(" \\| ");
@@ -70,9 +64,12 @@ public class Storage {
             case "T":
                 return new Todo(description, isDone);
             case "D":
-                return new Deadline(description, parts[3], isDone);
+                LocalDateTime by = LocalDateTime.parse(parts[3], dateTimeFormat);
+                return new Deadline(description, by, isDone);
             case "E":
-                return new Event(description, parts[3], parts[4], isDone);
+                LocalDateTime from = LocalDateTime.parse(parts[3], dateTimeFormat);
+                LocalDateTime to = LocalDateTime.parse(parts[4], dateTimeFormat);
+                return new Event(description, from, to, isDone);
             default:
                 throw new EddieException(ErrorMessages.TASK_TYPE_UNKNOWN + type);
             }
@@ -81,9 +78,6 @@ public class Storage {
         }
     }
 
-    /**
-     * Creates the storage file and parent directories if they don't exist.
-     */
     private void createFile() throws EddieException {
         File file = new File(filePath);
         File parent = file.getParentFile();

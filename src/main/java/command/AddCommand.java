@@ -8,6 +8,10 @@ import task.Todo;
 import task.Deadline;
 import task.Event;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 /**
  * Represents a command to add a new task todo, deadline and event.
  */
@@ -31,18 +35,31 @@ public class AddCommand extends Command {
             break;
         case "deadline":
             String[] deadlineParts = taskDetails.split(" /by ", 2);
-            if (deadlineParts.length < 2) {
+            if (deadlineParts.length < 2 || deadlineParts[0].trim().isEmpty()) {
                 throw new EddieException(ErrorMessages.INVALID_DEADLINE);
             }
-            tasks.addTask(new Deadline(deadlineParts[0], deadlineParts[1]));
+            try {
+                DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+                LocalDateTime by = LocalDateTime.parse(deadlineParts[1].trim(), inputFormat);
+                tasks.addTask(new Deadline(deadlineParts[0].trim(), by));
+            } catch (DateTimeParseException e) {
+                throw new EddieException(ErrorMessages.INVALID_DEADLINE);
+            }
             break;
         case "event":
             String[] eventParts = taskDetails.split(" /from ", 2);
-            if (eventParts.length < 2 || !eventParts[1].contains(" /to ")) {
+            if (eventParts.length < 2 || !eventParts[1].contains(" /to ") || eventParts[0].trim().isEmpty()) {
                 throw new EddieException(ErrorMessages.INVALID_EVENT);
             }
             String[] timeParts = eventParts[1].split(" /to ", 2);
-            tasks.addTask(new Event(eventParts[0], timeParts[0], timeParts[1]));
+            try {
+                DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+                LocalDateTime from = LocalDateTime.parse(timeParts[0].trim(), inputFormat);
+                LocalDateTime to = LocalDateTime.parse(timeParts[1].trim(), inputFormat);
+                tasks.addTask(new Event(eventParts[0].trim(), from, to));
+            } catch (DateTimeParseException e) {
+                throw new EddieException(ErrorMessages.INVALID_EVENT);
+            }
             break;
         default:
             throw new EddieException(ErrorMessages.INVALID_COMMAND);
