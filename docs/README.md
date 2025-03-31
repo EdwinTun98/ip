@@ -28,8 +28,6 @@ I can help you manage different types of tasks.
 - `event {description} /from {yyyy-MM-dd HHmm} /to {yyyy-MM-dd HHmm}` – Adds an Event
 
 
-// Describe the action and its outcome.
-
 Example: adding tasks
 ```
 ____________________________________________________________
@@ -102,6 +100,7 @@ ____________________________________________________________
 Eddie:
 Oh no! Marked as not done:
   [T][ ] read book
+____________________________________________________________
 ```
 
 ---
