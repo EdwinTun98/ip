@@ -2,3 +2,6 @@ T | 0 | read
 D | 0 | submit assignment | 2025-04-01 1800
 E | 0 | group meeting | 2025-04-02 1000 | 2025-04-02 1200
 T | 0 | read book
+T | 0 | read book
+D | 0 | return book | 2025-04-01 1800
+E | 0 | group project meeting | 2025-04-02 1400 | 2025-04-02 1600

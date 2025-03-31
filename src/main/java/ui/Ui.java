@@ -35,6 +35,7 @@ public class Ui {
         System.out.println("Mark as done: `mark 2`");
         System.out.println("Unmark: `unmark 2`");
         System.out.println("Delete: `delete 2`");
+        System.out.println("Find tasks: `find {keyword}`");
         System.out.println("Exit: `bye`");
         printLine();
     }
@@ -80,7 +81,7 @@ public class Ui {
     }
 
     public void printLine() {
-        System.out.println("____________________________________________________________");
+        System.out.println("_____________________________________________________________________");
     }
 
     public void showLoadingError() {
